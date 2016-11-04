@@ -26,20 +26,18 @@ endef
 define Build/Prepare
 #	# Copy dummy makefile into the build dir to keep the openwrt build system happy
 	mkdir -p $(PKG_BUILD_DIR)
-	$(CP) ./src/* $(PKG_BUILD_DIR)/
+	$(CP) ./* $(PKG_BUILD_DIR)/
 endef
 
 
 
-#APP_DIR = $(PKG_BUILD_DIR)/iot-prj
-APP_DIR = ./iot-prj
+APP_DIR = $(PKG_BUILD_DIR)/iot-prj
 APP_INCLUDE_DIRS += -I $(APP_DIR)
 APP_NAME=iot-prj
-APP_SRC_FILES=$(APP_DIR)/$(APP_NAME).c
+APP_SRC_FILES=$(APP_NAME).c
 
 #IoT client directory
-#IOT_CLIENT_DIR=$(PKG_BUILD_DIR)/aws_iot_src
-IOT_CLIENT_DIR=./aws_iot_src
+IOT_CLIENT_DIR=$(PKG_BUILD_DIR)/aws_iot_src
 IOT_INCLUDE_DIRS += -I $(IOT_CLIENT_DIR)/protocol/mqtt
 IOT_INCLUDE_DIRS += -I $(IOT_CLIENT_DIR)/protocol/mqtt/aws_iot_embedded_client_wrapper
 IOT_INCLUDE_DIRS += -I $(IOT_CLIENT_DIR)/protocol/mqtt/aws_iot_embedded_client_wrapper/platform_linux
@@ -54,8 +52,7 @@ IOT_SRC_FILES += $(shell find $(PLATFORM_DIR)/ -name '*.c')
 IOT_SRC_FILES += $(shell find $(PLATFORM_COMMON_DIR)/ -name '*.c')
 
 #MQTT Paho Embedded C client directory
-#MQTT_DIR = $(PKG_BUILD_DIR)/aws_mqtt_embedded_client_lib
-MQTT_DIR = ./aws_mqtt_embedded_client_lib
+MQTT_DIR = $(PKG_BUILD_DIR)/aws_mqtt_embedded_client_lib
 MQTT_C_DIR = $(MQTT_DIR)/MQTTClient-C/src
 MQTT_EMB_DIR = $(MQTT_DIR)/MQTTPacket/src
 
@@ -94,36 +91,29 @@ COMPILER_FLAGS += -g
 COMPILER_FLAGS += $(LOG_FLAGS)
 #If the processor is big endian uncomment the compiler flag
 #COMPILER_FLAGS += -DREVERSED
-#MAKE_CMD = $(TARGET_CC) $(SRC_FILES) $(COMPILER_FLAGS) -o $(APP_NAME) $(LD_FLAG) $(EXTERNAL_LIBS) $(INCLUDE_ALL_DIRS)
-#MAKE_CMD = $(CC) $(SRC_FILES) $(COMPILER_FLAGS) -o $(APP_NAME) $(LD_FLAG) $(EXTERNAL_LIBS) $(INCLUDE_ALL_DIRS)
+
 
 define Build/Compile
-
 	$(info ----------------------------------------------------------------------------------------------------- PKG_BUILD_DIR [${PKG_BUILD_DIR}] AAAAAAAAAAAAAAAAAAAAAAAAAAAA [${PKG_BD}] )
 	$(info ---BBBBBBBB-- [${PKG_NAME}]--[${APP_SRC_FILES}]--MQTT ---- $(MQTT_SRC_FILES))
 	$(info CALLING MAKE  )
 	
-	$(MAKE) -C $(PKG_BUILD_DIR)  \
-	C_INCLUDE_PATH="$(STAGING_DIR)/usr/include" \
-	CPLUS_INCLUDE_PATH="$(STAGING_DIR)/usr/include" \
-	CC="$(TARGET_CC)" \
-	EXTRA_CFLAGS="$(TARGET_CFLAGS) $(COMPILER_FLAGS)"\
-	CROSS_COMPILE="$(TARGET_CROSS)" \
-	CPPFLAGS="-I$(STAGING_DIR)/usr/include \
-	 -I$(STAGING_DIR)/usr/include/uClibc++ -fno-builtin -fno-rtti \
-	 -nostdinc++ -fpermissive -Wno-error"  $(INCLUDE_ALL_DIRS) \
-	LDFLAGS="$(TARGET_LDFLAGS) $(LD_FLAG) $(EXTERNAL_LIBS) "
 	
 	$(info MAKE ${MAKE})
-	$(info CALLING MAKE2 )
+	$(info CALLING MAKE2  )
+	MAKE_CMD = $(TARGET_CC) $(SRC_FILES) $(COMPILER_FLAGS) -o $(APP_NAME) $(LD_FLAG) $(EXTERNAL_LIBS) $(INCLUDE_ALL_DIRS)
+	#MAKE_CMD = $(CC) $(SRC_FILES) $(COMPILER_FLAGS) -o $(APP_NAME) $(LD_FLAG) $(EXTERNAL_LIBS) $(INCLUDE_ALL_DIRS)
+	$(info ${MAKE_CMD}  )
+
+
 endef
 
 
-define Package/aws-iot-prj/install
-	$(INSTALL_DIR) $(1)/usr/iot-prj
-	#$(INSTALL_BIN) $(PKG_BUILD_DIR)/iot-prj $(1)/usr/sbin
-	#git describe --long --all --dirty > $(1)/etc/ozwd/version || echo NOT_VERSIONED > $(1)/etc/ozwd/version
-endef
+#define Package/aws-iot-prj/install
+#	$(INSTALL_DIR) $(1)/usr/iot-prj
+#	$(INSTALL_BIN) $(PKG_BUILD_DIR)/aws-iot-prj $(1)/usr/sbin
+#	#git describe --long --all --dirty > $(1)/etc/ozwd/version || echo NOT_VERSIONED > $(1)/etc/ozwd/version
+#endef
 
 $(eval $(call BuildPackage,aws-iot-prj))
 
